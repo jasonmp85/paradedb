@@ -212,7 +212,7 @@ pub async fn bench_eslogs_query_search_index(
         group_name: "Search Query".into(),
         function_name: "bench_eslogs_query_search_index".into(),
         setup_query: None,
-        query: format!("SELECT * FROM {table} WHERE {table} @@@ '{query}' LIMIT {limit}"),
+        query: format!("SELECT id, paradedb.score(id) AS rank FROM {table} WHERE benchmark_eslogs @@@ '{query}' ORDER BY 2 DESC LIMIT {limit};"),
         database_url: url,
     }
     .run_pg()
@@ -246,7 +246,7 @@ pub async fn bench_eslogs_query_gin_index(
         group_name: "GIN TSQuery/TSVector Query".into(),
         function_name: "bench_eslogs_query_gin_index".into(),
         setup_query: None,
-        query: format!("SELECT * FROM {table} WHERE to_tsvector('english', message) @@ to_tsquery('{query}') LIMIT {limit};"),
+        query: format!("SELECT id, ts_rank(to_tsvector('english', message), to_tsquery('{query}')) AS rank FROM {table} WHERE to_tsvector('english', message) @@ to_tsquery('{query}') ORDER BY 2 DESC LIMIT {limit};"),
         database_url: url,
     }
     .run_pg()
